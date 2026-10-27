@@ -1,0 +1,596 @@
+# YB Quiz Master — General Knowledge
+
+Copy this complete code into `index.html`. It includes a bank of 60 questions and gives you 10 random questions per round. Previously answered questions are remembered in the same browser, so questions won't repeat across rounds until the bank has been used up.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YB Quiz Master - GK</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    padding: 22px 14px;
+    font-family: Arial, sans-serif;
+    color: #f4f5ff;
+    background: linear-gradient(135deg, #050b1c, #102c5c, #29245b);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    width: 100%;
+    max-width: 700px;
+    padding: 25px;
+    border: 1px solid #5368a0;
+    border-radius: 22px;
+    background: linear-gradient(145deg, #101d38, #20284b);
+    box-shadow: 0 15px 45px #0006;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.logo {
+    font-size: 35px;
+    margin-bottom: 8px;
+}
+
+h1 {
+    color: #c9baff;
+    font-size: 30px;
+}
+
+header p {
+    color: #c0c9e8;
+    margin-top: 8px;
+    line-height: 1.5;
+}
+
+.stats {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.stat {
+    flex: 1;
+    padding: 12px 6px;
+    text-align: center;
+    border-radius: 12px;
+    background: #0a1530;
+    color: #d9d1ff;
+    font-size: 13px;
+}
+
+.stat strong {
+    display: block;
+    font-size: 21px;
+    margin-top: 5px;
+    color: white;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 13px;
+    color: #d1d8f5;
+    margin-bottom: 8px;
+}
+
+.progress-track {
+    height: 8px;
+    background: #070f25;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 23px;
+}
+
+#progress {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #8c7bff, #51c8ff);
+    transition: width .3s;
+}
+
+#category {
+    display: inline-block;
+    background: #393366;
+    color: #d8ceff;
+    padding: 7px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    margin-bottom: 14px;
+}
+
+#question {
+    font-size: 21px;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+#options {
+    display: grid;
+    gap: 11px;
+}
+
+.option {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #52618c;
+    border-radius: 12px;
+    background: #182747;
+    color: white;
+    text-align: left;
+    font-size: 15px;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.option:hover:not(:disabled) {
+    background: #2a3b66;
+    border-color: #a99bff;
+    transform: translateY(-1px);
+}
+
+.option.correct {
+    background: #145b49;
+    border-color: #49e0ad;
+}
+
+.option.wrong {
+    background: #742f45;
+    border-color: #ff879f;
+}
+
+.option:disabled {
+    cursor: default;
+}
+
+#feedback {
+    min-height: 26px;
+    margin: 15px 0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn {
+    flex: 1;
+    border: none;
+    border-radius: 12px;
+    padding: 13px;
+    font-weight: bold;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.primary {
+    background: linear-gradient(90deg, #8e7cff, #63baff);
+    color: #081329;
+}
+
+.secondary {
+    background: #273655;
+    border: 1px solid #52618c;
+    color: white;
+}
+
+.btn:disabled {
+    opacity: .4;
+    cursor: not-allowed;
+}
+
+#result {
+    text-align: center;
+    padding: 15px 0;
+}
+
+#result h2 {
+    font-size: 29px;
+    color: #c9baff;
+    margin: 15px 0;
+}
+
+#result p {
+    color: #d6def8;
+    line-height: 1.8;
+    margin-bottom: 18px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.note {
+    color: #aebcdd;
+    text-align: center;
+    font-size: 12px;
+    margin-top: 18px;
+    line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 18px;
+    }
+
+    h1 {
+        font-size: 25px;
+    }
+
+    #question {
+        font-size: 19px;
+    }
+
+    .stat {
+        font-size: 11px;
+    }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+    <header>
+        <div class="logo">🌍 🧠</div>
+        <h1>YB Quiz Master</h1>
+        <p>General Knowledge Challenge<br>
+        Test your knowledge. Learn something new!</p>
+    </header>
+
+    <div id="quizArea">
+        <div class="stats">
+            <div class="stat">QUESTION<strong id="qNumber">1/10</strong></div>
+            <div class="stat">SCORE<strong id="score">0</strong></div>
+            <div class="stat">BEST SCORE<strong id="best">0</strong></div>
+        </div>
+
+        <div class="progress-info">
+            <span>Quiz progress</span>
+            <span id="progressText">0 of 10</span>
+        </div>
+
+        <div class="progress-track">
+            <div id="progress"></div>
+        </div>
+
+        <span id="category">General Knowledge</span>
+        <h2 id="question">Loading question...</h2>
+        <div id="options"></div>
+        <div id="feedback" aria-live="polite"></div>
+
+        <div class="controls">
+            <button class="btn secondary" id="skipBtn" onclick="skipQuestion()">Skip</button>
+            <button class="btn primary" id="nextBtn" onclick="nextQuestion()" disabled>Next Question →</button>
+        </div>
+    </div>
+
+    <div id="result" class="hidden">
+        <div class="logo">🏆</div>
+        <h2 id="resultTitle">Quiz Completed!</h2>
+        <p id="resultText"></p>
+        <button class="btn primary" onclick="startQuiz()">Play New Quiz ↻</button>
+        <button class="btn secondary" style="margin-top:10px;width:100%" onclick="resetQuestionHistory()">
+            Reset Question History
+        </button>
+    </div>
+
+    <p class="note">60-question bank • 10 random questions per round<br>
+    Questions you've already played are saved in this browser.</p>
+</div>
+
+<script>
+const questionBank = [
+    // INDIA
+    {id:1, category:"India", q:"What is the capital of India?", options:["Mumbai","New Delhi","Kolkata","Chennai"], answer:"New Delhi"},
+    {id:2, category:"India", q:"What is the national animal of India?", options:["Lion","Bengal Tiger","Elephant","Leopard"], answer:"Bengal Tiger"},
+    {id:3, category:"India", q:"Which is the largest Indian state by area?", options:["Maharashtra","Madhya Pradesh","Rajasthan","Uttar Pradesh"], answer:"Rajasthan"},
+    {id:4, category:"India", q:"Who was the first Prime Minister of India?", options:["Sardar Patel","Jawaharlal Nehru","Rajendra Prasad","Lal Bahadur Shastri"], answer:"Jawaharlal Nehru"},
+    {id:5, category:"India", q:"Which is the national flower of India?", options:["Rose","Lotus","Sunflower","Jasmine"], answer:"Lotus"},
+    {id:6, category:"India", q:"What is the currency of India?", options:["Rupee","Taka","Yen","Ringgit"], answer:"Rupee"},
+    {id:7, category:"India", q:"Which city is known as the Pink City?", options:["Jaipur","Jodhpur","Bhopal","Surat"], answer:"Jaipur"},
+    {id:8, category:"India", q:"Who wrote India's national anthem?", options:["Bankim Chandra Chatterjee","Rabindranath Tagore","Sarojini Naidu","Subramania Bharati"], answer:"Rabindranath Tagore"},
+    {id:9, category:"India", q:"Which is the highest civilian award in India?", options:["Padma Shri","Padma Bhushan","Bharat Ratna","Param Vir Chakra"], answer:"Bharat Ratna"},
+    {id:10, category:"India", q:"The Gateway of India is located in which city?", options:["Pune","Mumbai","Delhi","Hyderabad"], answer:"Mumbai"},
+
+    // WORLD GEOGRAPHY
+    {id:11, category:"Geography", q:"Which is the largest continent?", options:["Africa","Europe","Asia","North America"], answer:"Asia"},
+    {id:12, category:"Geography", q:"Which is the largest ocean on Earth?", options:["Atlantic Ocean","Indian Ocean","Arctic Ocean","Pacific Ocean"], answer:"Pacific Ocean"},
+    {id:13, category:"Geography", q:"What is the capital of Japan?", options:["Kyoto","Tokyo","Osaka","Hiroshima"], answer:"Tokyo"},
+    {id:14, category:"Geography", q:"Which river flows through Egypt?", options:["Amazon","Nile","Danube","Thames"], answer:"Nile"},
+    {id:15, category:"Geography", q:"Which country is famous for the pyramids of Giza?", options:["Mexico","Egypt","Greece","Peru"], answer:"Egypt"},
+    {id:16, category:"Geography", q:"What is the capital of Australia?", options:["Sydney","Melbourne","Canberra","Perth"], answer:"Canberra"},
+    {id:17, category:"Geography", q:"Mount Everest belongs to which mountain range?", options:["Alps","Andes","Himalayas","Rockies"], answer:"Himalayas"},
+    {id:18, category:"Geography", q:"Which is the smallest continent by land area?", options:["Europe","Australia","South America","Antarctica"], answer:"Australia"},
+    {id:19, category:"Geography", q:"Which country is often described as being shaped like a boot?", options:["Spain","Italy","Portugal","Croatia"], answer:"Italy"},
+    {id:20, category:"Geography", q:"What is the capital of Canada?", options:["Toronto","Vancouver","Ottawa","Montreal"], answer:"Ottawa"},
+
+    // SCIENCE
+    {id:21, category:"Science", q:"Which planet is known as the Red Planet?", options:["Venus","Mars","Jupiter","Mercury"], answer:"Mars"},
+    {id:22, category:"Science", q:"What is the chemical formula for water?", options:["CO2","O2","H2O","NaCl"], answer:"H2O"},
+    {id:23, category:"Science", q:"Which gas do plants absorb during photosynthesis?", options:["Oxygen","Nitrogen","Carbon dioxide","Hydrogen"], answer:"Carbon dioxide"},
+    {id:24, category:"Science", q:"How many bones are there in a typical adult human body?", options:["206","201","212","300"], answer:"206"},
+    {id:25, category:"Science", q:"Which organ pumps blood around the human body?", options:["Lungs","Brain","Heart","Kidneys"], answer:"Heart"},
+    {id:26, category:"Science", q:"What is the nearest star to Earth?", options:["Sirius","The Sun","Polaris","Proxima Centauri"], answer:"The Sun"},
+    {id:27, category:"Science", q:"What force pulls objects toward Earth?", options:["Magnetism","Friction","Gravity","Electricity"], answer:"Gravity"},
+    {id:28, category:"Science", q:"At sea level, water boils at what temperature in Celsius?", options:["50°C","90°C","100°C","120°C"], answer:"100°C"},
+    {id:29, category:"Science", q:"Which vitamin can the body produce with help from sunlight?", options:["Vitamin A","Vitamin B12","Vitamin C","Vitamin D"], answer:"Vitamin D"},
+    {id:30, category:"Science", q:"What is the hardest naturally occurring substance?", options:["Quartz","Iron","Diamond","Granite"], answer:"Diamond"},
+
+    // HISTORY
+    {id:31, category:"History", q:"In which year did India gain independence?", options:["1942","1945","1947","1950"], answer:"1947"},
+    {id:32, category:"History", q:"Who is popularly known as the Father of the Nation in India?", options:["Bhagat Singh","Mahatma Gandhi","B. R. Ambedkar","Bal Gangadhar Tilak"], answer:"Mahatma Gandhi"},
+    {id:33, category:"History", q:"Who was the first President of India?", options:["Dr. Rajendra Prasad","Dr. S. Radhakrishnan","Zakir Husain","V. V. Giri"], answer:"Dr. Rajendra Prasad"},
+    {id:34, category:"History", q:"Who founded the Maurya Empire?", options:["Ashoka","Chandragupta Maurya","Harsha","Samudragupta"], answer:"Chandragupta Maurya"},
+    {id:35, category:"History", q:"The Taj Mahal was built by which Mughal emperor?", options:["Akbar","Babur","Shah Jahan","Aurangzeb"], answer:"Shah Jahan"},
+    {id:36, category:"History", q:"Who was the first person to walk on the Moon?", options:["Yuri Gagarin","Neil Armstrong","Buzz Aldrin","Michael Collins"], answer:"Neil Armstrong"},
+    {id:37, category:"History", q:"The French Revolution began in which year?", options:["1776","1789","1815","1848"], answer:"1789"},
+    {id:38, category:"History", q:"Who was the founder of the Mughal Empire in India?", options:["Akbar","Humayun","Babur","Shah Jahan"], answer:"Babur"},
+
+    // SPORTS
+    {id:39, category:"Sports", q:"How many players from one cricket team are on the field at a time?", options:["9","10","11","12"], answer:"11"},
+    {id:40, category:"Sports", q:"How many rings are on the Olympic symbol?", options:["4","5","6","7"], answer:"5"},
+    {id:41, category:"Sports", q:"Wimbledon is associated with which sport?", options:["Football","Tennis","Golf","Hockey"], answer:"Tennis"},
+    {id:42, category:"Sports", q:"How many players from one team are on the court in basketball?", options:["5","6","7","11"], answer:"5"},
+    {id:43, category:"Sports", q:"The Thomas Cup is associated with which sport?", options:["Table tennis","Badminton","Football","Chess"], answer:"Badminton"},
+    {id:44, category:"Sports", q:"Which chess piece moves in an L-shape?", options:["Bishop","Rook","Knight","Queen"], answer:"Knight"},
+
+    // COMPUTER
+    {id:45, category:"Computer", q:"What does CPU stand for?", options:["Central Processing Unit","Computer Power Utility","Central Program User","Control Processing User"], answer:"Central Processing Unit"},
+    {id:46, category:"Computer", q:"Which language is commonly used to structure web pages?", options:["HTML","SQL","C","Python"], answer:"HTML"},
+    {id:47, category:"Computer", q:"What does URL stand for?", options:["Universal Record Link","Uniform Resource Locator","United Reference Language","User Route Location"], answer:"Uniform Resource Locator"},
+    {id:48, category:"Computer", q:"Which of these is an input device?", options:["Monitor","Printer","Keyboard","Speaker"], answer:"Keyboard"},
+    {id:49, category:"Computer", q:"What does RAM stand for?", options:["Read Access Memory","Random Access Memory","Run Active Machine","Remote Application Module"], answer:"Random Access Memory"},
+    {id:50, category:"Computer", q:"Which company developed the Windows operating system?", options:["Apple","Google","Microsoft","IBM"], answer:"Microsoft"},
+
+    // GENERAL KNOWLEDGE
+    {id:51, category:"General Knowledge", q:"How many days are there in a leap year?", options:["364","365","366","367"], answer:"366"},
+    {id:52, category:"General Knowledge", q:"Which language has the most native speakers worldwide?", options:["English","Spanish","Mandarin Chinese","Hindi"], answer:"Mandarin Chinese"},
+    {id:53, category:"General Knowledge", q:"How many colours are traditionally listed in a rainbow?", options:["5","6","7","8"], answer:"7"},
+    {id:54, category:"General Knowledge", q:"Which instrument is used to measure temperature?", options:["Barometer","Thermometer","Speedometer","Altimeter"], answer:"Thermometer"},
+    {id:55, category:"General Knowledge", q:"What is the main ingredient in traditional guacamole?", options:["Cucumber","Avocado","Peas","Spinach"], answer:"Avocado"},
+    {id:56, category:"General Knowledge", q:"Which bird is known for its ability to mimic human speech?", options:["Eagle","Parrot","Penguin","Ostrich"], answer:"Parrot"},
+    {id:57, category:"General Knowledge", q:"How many sides does a hexagon have?", options:["5","6","7","8"], answer:"6"},
+    {id:58, category:"General Knowledge", q:"Which festival is widely known as the Festival of Lights in India?", options:["Holi","Diwali","Eid","Pongal"], answer:"Diwali"},
+    {id:59, category:"General Knowledge", q:"Which animal is the largest mammal on Earth?", options:["African elephant","Blue whale","Giraffe","Hippopotamus"], answer:"Blue whale"},
+    {id:60, category:"General Knowledge", q:"What is the primary language spoken in Brazil?", options:["Spanish","Portuguese","French","English"], answer:"Portuguese"}
+];
+
+const QUESTIONS_PER_ROUND = 10;
+const HISTORY_KEY = "ybGKSeenQuestions";
+const BEST_KEY = "ybGKBestScore";
+
+let quizQuestions = [];
+let currentIndex = 0;
+let score = 0;
+let answered = false;
+let roundCorrect = 0;
+
+function shuffle(array) {
+    const copy = [...array];
+
+    for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+
+    return copy;
+}
+
+function getSeenQuestions() {
+    try {
+        return JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+    } catch {
+        return [];
+    }
+}
+
+function startQuiz() {
+    let seen = getSeenQuestions();
+    let unseen = questionBank.filter(item => !seen.includes(item.id));
+
+    // Start a fresh cycle only when fewer than 10 unseen questions remain.
+    if (unseen.length < QUESTIONS_PER_ROUND) {
+        seen = [];
+        unseen = [...questionBank];
+    }
+
+    quizQuestions = shuffle(unseen).slice(0, QUESTIONS_PER_ROUND);
+
+    // Remember these questions immediately, so a reload doesn't repeat the round.
+    seen = [...new Set([...seen, ...quizQuestions.map(item => item.id)])];
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(seen));
+
+    currentIndex = 0;
+    score = 0;
+    roundCorrect = 0;
+    answered = false;
+
+    document.getElementById("quizArea").classList.remove("hidden");
+    document.getElementById("result").classList.add("hidden");
+    document.getElementById("best").textContent =
+        localStorage.getItem(BEST_KEY) || "0";
+
+    showQuestion();
+}
+
+function showQuestion() {
+    answered = false;
+
+    const item = quizQuestions[currentIndex];
+
+    document.getElementById("qNumber").textContent =
+        `${currentIndex + 1}/${QUESTIONS_PER_ROUND}`;
+    document.getElementById("score").textContent = score;
+    document.getElementById("category").textContent = item.category;
+    document.getElementById("question").textContent = item.q;
+    document.getElementById("progressText").textContent =
+        `${currentIndex} of ${QUESTIONS_PER_ROUND}`;
+    document.getElementById("progress").style.width =
+        `${currentIndex / QUESTIONS_PER_ROUND * 100}%`;
+    document.getElementById("feedback").textContent = "";
+    document.getElementById("nextBtn").disabled = true;
+    document.getElementById("skipBtn").disabled = false;
+    document.getElementById("nextBtn").textContent =
+        currentIndex === QUESTIONS_PER_ROUND - 1
+            ? "See Results 🏆"
+            : "Next Question →";
+
+    const optionsArea = document.getElementById("options");
+    optionsArea.innerHTML = "";
+
+    shuffle(item.options).forEach(optionText => {
+        const button = document.createElement("button");
+        button.className = "option";
+        button.textContent = optionText;
+        button.onclick = () => chooseAnswer(button, optionText, item);
+        optionsArea.appendChild(button);
+    });
+}
+
+function chooseAnswer(button, selected, item) {
+    if (answered) return;
+    answered = true;
+
+    const buttons = document.querySelectorAll(".option");
+    buttons.forEach(btn => {
+        btn.disabled = true;
+
+        if (btn.textContent === item.answer) {
+            btn.classList.add("correct");
+        }
+    });
+
+    const feedback = document.getElementById("feedback");
+
+    if (selected === item.answer) {
+        score++;
+        roundCorrect++;
+        button.classList.add("correct");
+        feedback.textContent = "✅ Correct! Well done.";
+        feedback.style.color = "#55e6b0";
+    } else {
+        button.classList.add("wrong");
+        feedback.textContent = `❌ Correct answer: ${item.answer}`;
+        feedback.style.color = "#ff9cad";
+    }
+
+    document.getElementById("score").textContent = score;
+    document.getElementById("progressText").textContent =
+        `${currentIndex + 1} of ${QUESTIONS_PER_ROUND}`;
+    document.getElementById("progress").style.width =
+        `${(currentIndex + 1) / QUESTIONS_PER_ROUND * 100}%`;
+    document.getElementById("nextBtn").disabled = false;
+    document.getElementById("skipBtn").disabled = true;
+}
+
+function skipQuestion() {
+    if (answered) return;
+
+    answered = true;
+    document.querySelectorAll(".option").forEach(btn => {
+        btn.disabled = true;
+        if (btn.textContent === quizQuestions[currentIndex].answer) {
+            btn.classList.add("correct");
+        }
+    });
+
+    document.getElementById("feedback").textContent =
+        `⏭️ Skipped! Answer: ${quizQuestions[currentIndex].answer}`;
+    document.getElementById("feedback").style.color = "#d0c7ff";
+    document.getElementById("nextBtn").disabled = false;
+    document.getElementById("skipBtn").disabled = true;
+    document.getElementById("progressText").textContent =
+        `${currentIndex + 1} of ${QUESTIONS_PER_ROUND}`;
+    document.getElementById("progress").style.width =
+        `${(currentIndex + 1) / QUESTIONS_PER_ROUND * 100}%`;
+}
+
+function nextQuestion() {
+    if (!answered) return;
+
+    currentIndex++;
+
+    if (currentIndex < QUESTIONS_PER_ROUND) {
+        showQuestion();
+    } else {
+        showResults();
+    }
+}
+
+function showResults() {
+    document.getElementById("quizArea").classList.add("hidden");
+    document.getElementById("result").classList.remove("hidden");
+
+    const percentage = score / QUESTIONS_PER_ROUND * 100;
+    let title = "Keep Practising! 💪";
+
+    if (percentage === 100) title = "Perfect Score! 🏆";
+    else if (percentage >= 80) title = "Excellent Work! 🌟";
+    else if (percentage >= 60) title = "Great Job! 🎉";
+    else if (percentage >= 40) title = "Good Effort! 👍";
+
+    document.getElementById("resultTitle").textContent = title;
+    document.getElementById("resultText").innerHTML =
+        `Your score: <strong>${score}/${QUESTIONS_PER_ROUND}</strong><br>` +
+        `Accuracy: <strong>${percentage}%</strong><br>` +
+        `Correct answers: ${roundCorrect}<br><br>` +
+        `Play another round to discover new questions!`;
+
+    const best = Number(localStorage.getItem(BEST_KEY) || 0);
+
+    if (score > best) {
+        localStorage.setItem(BEST_KEY, score);
+    }
+
+    document.getElementById("best").textContent =
+        localStorage.getItem(BEST_KEY) || "0";
+}
+
+function resetQuestionHistory() {
+    const confirmed = confirm(
+        "Reset the question history? Previously played questions can appear again."
+    );
+
+    if (confirmed) {
+        localStorage.removeItem(HISTORY_KEY);
+        startQuiz();
+    }
+}
+
+startQuiz();
+</script>
+</body>
+</html>
+```
+
+## How the new question system works
+
+1. The app has 60 questions covering multiple GK topics.
+2. Each round randomly selects 10 questions and shuffles their answer options.
+3. It remembers which questions you've played using browser storage.
+4. It avoids repeating those questions in later rounds until the question bank is nearly exhausted, then starts a new cycle.
+5. Use **Reset Question History** if you want to start over.
+
+**Important:** The question history and best score are stored in the browser on that device. Clearing browser data will erase them. This is a fixed question bank, not a live internet database, so you can add more questions to the `questionBank` array to keep expanding it.
